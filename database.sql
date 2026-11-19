@@ -1,12 +1,16 @@
-CREATE DATABASE IF NOT EXISTS gamevault CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- GameVault database schema for MySQL/MariaDB (Laragon/phpMyAdmin).
+-- Import this file in phpMyAdmin, or run it with the MySQL client.
+CREATE DATABASE IF NOT EXISTS `gamevault`
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 USE gamevault;
 
 CREATE TABLE admins (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(60) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
+  public_key TEXT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE game_files (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -25,7 +29,7 @@ CREATE TABLE game_files (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_game_files_admin FOREIGN KEY (uploaded_by) REFERENCES admins(id)
     ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE encrypted_texts (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -40,5 +44,4 @@ CREATE TABLE encrypted_texts (
   INDEX idx_encrypted_texts_created_at (created_at),
   CONSTRAINT fk_encrypted_texts_admin FOREIGN KEY (created_by) REFERENCES admins(id)
     ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,18 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
-$pdo = db();
-
-// Bring older databases (which used password-based admin records) up to the
-// schema expected by the RSA-key setup flow before reading or writing admins.
-$adminColumns = $pdo->query('SHOW COLUMNS FROM admins')->fetchAll(PDO::FETCH_COLUMN);
-if (!in_array('public_key', $adminColumns, true)) {
-    $pdo->exec('ALTER TABLE admins ADD COLUMN public_key TEXT NULL');
-}
-if (in_array('password_hash', $adminColumns, true)) {
-    $pdo->exec('ALTER TABLE admins MODIFY COLUMN password_hash VARCHAR(255) NULL');
-}
-
-$existingAdminId = $pdo->query('SELECT id FROM admins ORDER BY id LIMIT 1')->fetchColumn();
+$count = (int)db()->query('SELECT COUNT(*) FROM admins')->fetchColumn();
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();

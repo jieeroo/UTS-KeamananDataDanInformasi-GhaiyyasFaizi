@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
-$count = (int)db()->query('SELECT COUNT(*) FROM admins')->fetchColumn();
+$existingAdminId = db()->query('SELECT id FROM admins ORDER BY id LIMIT 1')->fetchColumn();
 $message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();

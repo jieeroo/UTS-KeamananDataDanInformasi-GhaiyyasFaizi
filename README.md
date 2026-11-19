@@ -4,7 +4,7 @@ Aplikasi PHP Native + MySQL untuk menyimpan file game dengan hybrid encryption:
 - AES-256-GCM: mengenkripsi konten file dan memverifikasi integritas.
 - RSA-3072 OAEP (SHA-1 default pada API OpenSSL PHP yang dipakai): mengenkripsi (wrap) kunci AES acak per file.
 - Enkripsi teks: judul dan isi dienkripsi AES-256-GCM, sementara kunci AES dibungkus RSA-3072-OAEP. Database hanya menyimpan ciphertext dan metadata enkripsinya.
-- Password admin: `password_hash()` / `password_verify()` (hash satu arah, bukan enkripsi).
+- Login admin: tanda tangan challenge dengan RSA-3072; private key disimpan di IndexedDB browser. AES-256-GCM dipakai untuk mengenkripsi file dan teks.
 
 ## Kebutuhan
 - PHP 8.1+ dengan ekstensi `pdo_mysql`, `openssl`, `fileinfo`
@@ -21,9 +21,16 @@ Aplikasi PHP Native + MySQL untuk menyimpan file game dengan hybrid encryption:
 
 ## Membuat akun admin pertama
 1. Buka `http://localhost/aplikasi-file-game-rahasia/setup.php`.
-2. Buat username dan password kuat (minimal 12 karakter).
-3. Setelah akun berhasil dibuat, **hapus `setup.php`** dari folder proyek.
-4. Login melalui halaman admin.
+2. Buat akun admin; browser membuat private/public key RSA-3072 tanpa meminta username atau password.
+3. Private key disimpan hanya di browser (IndexedDB); public key dikirim ke server.
+4. Setelah akun berhasil dibuat, **hapus `setup.php`** dari folder proyek.
+5. Login melalui halaman admin. Jika browser atau profil browser berganti, akun perlu didaftarkan ulang dengan public key baru.
+
+Untuk database lama, tambahkan kolom public key sebelum membuka setup. Setup akan mengganti kunci admin lama pada baris admin pertama dan menonaktifkan kunci pada baris lainnya, tanpa menghapus relasi data file:
+```sql
+ALTER TABLE admins ADD COLUMN public_key TEXT NULL;
+```
+Kolom `password_hash` lama boleh dibiarkan; login aplikasi tidak lagi membacanya. Hapus `setup.php` setelah private key RSA baru terdaftar.
 
 ## Alur kriptografi
 Upload -> PHP membuat AES key random 256-bit dan IV random 96-bit -> AES-256-GCM menghasilkan ciphertext + tag -> public RSA mengenkripsi AES key dengan OAEP -> file ciphertext disimpan di `storage/encrypted`, metadata kriptografi disimpan di MySQL.
